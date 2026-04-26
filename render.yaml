@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: hersafe-live-api
+    env: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///./hersafe.db
+      - key: PUBLIC_APP_URL
+        value: https://your-render-url.onrender.com

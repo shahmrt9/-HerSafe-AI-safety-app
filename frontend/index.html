@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HerSafe+ Live</title>
+    <link rel="manifest" href="/static/manifest.json" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/static/styles.css" />
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="shield">🛡️</span>
+                <div>
+                    <h1>HerSafe+</h1>
+                    <p>Prevent · Protect · Support</p>
+                </div>
+            </div>
+
+            <nav id="nav" class="hidden">
+                <button data-page="dashboard" class="active">Dashboard</button>
+                <button data-page="trip">Trip Mode</button>
+                <button data-page="calm">Calm Mode</button>
+                <button data-page="contacts">Trusted Contacts</button>
+                <button data-page="settings">Settings</button>
+                <button id="logoutBtn" class="ghost">Logout</button>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <section id="authPage" class="page auth-page">
+                <div class="auth-card">
+                    <h2>Welcome to HerSafe+</h2>
+                    <p>Sign in or create an account to start safety tracking.</p>
+
+                    <div class="tabs">
+                        <button id="loginTab" class="active">Login</button>
+                        <button id="signupTab">Sign Up</button>
+                    </div>
+
+                    <form id="authForm">
+                        <input id="name" placeholder="Full name" class="signup-only hidden" />
+                        <input id="email" type="email" placeholder="Email" required />
+                        <input id="phone" placeholder="Phone number" class="signup-only hidden" />
+                        <input id="password" type="password" placeholder="Password" required />
+                        <button type="submit" class="primary full">Continue</button>
+                    </form>
+
+                    <p id="authMsg" class="msg"></p>
+                </div>
+            </section>
+
+
+            <section id="dashboard" class="page hidden">
+                <div class="topbar">
+                    <h2>Dashboard</h2>
+                    <button id="sosTop" class="sos">SOS</button>
+
+                </div>
+
+                <div class="grid cards-3">
+                    <article class="card">
+                        <h3>Safety Status</h3>
+                        <p id="safetyStatus">Ready</p>
+
+                        <div class="setting-row">
+                            <span>Browser Notifications</span>
+                            <span id="notificationState" class="badge">Off</span>
+                        </div>
+
+                        <button id="notifyPermission" class="secondary">Enable Notifications</button>
+
+                        <p class="helper-text">
+                            Notifications help HerSafe+ show safety reminders and SOS updates.
+                        </p>
+                        <button id="enableSafetyMode" class="primary full">Enable Safety Mode</button>
+                    </article>
+
+
+                    <article class="card">
+                        <h3>Task Planner</h3>
+
+                        <input id="taskTitle" placeholder="Example: Leave office by 8 PM" />
+
+                        <button id="addTask" class="secondary">Add Task</button>
+
+                        <p class="helper-text">
+                            Priority helps HerSafe+ understand task urgency and travel safety risk.
+                        </p>
+
+                        <div class="priority-guide">
+                            <small><b>Low:</b> routine task</small>
+                            <small><b>Medium:</b> important task</small>
+                            <small><b>High:</b> urgent task</small>
+                            <small><b>Safety:</b> travel or emergency-related task</small>
+                        </div>
+
+                        <div id="taskList"></div>
+                    </article>
+
+                    <article class="card">
+                        <h3>Mood Check-in</h3>
+
+                        <select id="moodScore">
+                            <option value="5">Great</option>
+                            <option value="4">Okay</option>
+                            <option value="3">Tired</option>
+                            <option value="2">Stressed</option>
+                            <option value="1">Anxious</option>
+                        </select>
+
+                        <textarea id="moodNote" placeholder="How are you feeling?"></textarea>
+
+                        <select id="healthIssue">
+                            <option value="">Select health concern optional</option>
+                            <option value="period_cramps">Period cramps</option>
+                            <option value="headache">Headache</option>
+                            <option value="fatigue">Fatigue / weakness</option>
+                            <option value="anxiety">Anxiety / panic feeling</option>
+                            <option value="back_pain">Back pain</option>
+                            <option value="pcos">PCOS-related discomfort</option>
+                            <option value="none">No health issue</option>
+                            <option value="other">Other</option>
+                        </select>
+
+                        <input id="otherHealthIssue" placeholder="Mention other health issue if any" />
+
+                        <button id="analyzeMood" class="secondary">Analyze & Suggest</button>
+
+                        <p class="helper-text">
+                            HerSafe+ suggests activities, music, quick care, and safety actions based on your mood.
+                        </p>
+
+                        <div id="moodResult" class="mood-result"></div>
+                    </article>
+                </div>
+
+                <div id="aiOutput" class="ai-output"></div>
+            </section>
+
+            <section id="trip" class="page hidden">
+                <div class="topbar">
+                    <h2>Trip Mode</h2>
+                    <p id="tripStatus" class="badge">Trip Not Started</p>
+                    <div>
+                        <button id="startTrip" class="primary">Start Live Trip</button>
+                        <button id="endTrip" class="secondary">End Trip</button>
+                        <button id="sosTrip" class="sos">SOS</button>
+                    </div>
+                </div>
+
+                <div class="grid trip-layout">
+                    <div class="card route-card">
+                        <h3>Safe Route Planner</h3>
+
+                        <input id="sourceName" value="Detecting live location..." readonly />
+                        <input id="destName" placeholder="Destination name" />
+
+                        <div class="split">
+                            <input id="destLat" placeholder="Destination latitude" />
+                            <input id="destLng" placeholder="Destination longitude" />
+                        </div>
+
+                        <button id="scoreRoute" class="secondary">Score Route</button>
+                        
+                        <p class="helper-text">Tip: Enter destination name or click on map to set destination.</p>
+                        <div id="routeResult"></div>
+                    </div>
+
+                    <div class="card map-card">
+                        <div id="map"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Emergency Help</h3>
+
+                    <div class="split">
+                        <button onclick="callEmergency('100')" class="danger">Police</button>
+                        <button onclick="callEmergency('108')" class="danger">Ambulance</button>
+                    </div>
+
+                    <div class="split">
+                        <button onclick="callEmergency('1091')" class="danger">Women Helpline</button>
+                        <button onclick="triggerSOS()" class="sos">Trigger SOS</button>
+                    </div>
+                </div>
+
+            </section>
+
+            <section id="calm" class="page hidden">
+                <div class="topbar">
+                    <h2>Smart Calm Mode</h2>
+                    <button id="safetyFromCalm" class="primary">Enable Safety Mode</button>
+                </div>
+
+                <div class="grid cards-3">
+                    <article class="card calm-card">
+                        <div class="breath-circle" id="breathCircle">Breathe</div>
+                        <h3>4-4-6 Breathing</h3>
+                        <p id="breathText">Inhale 4 sec · Hold 4 sec · Exhale 6 sec</p>
+                        <button id="startBreathing" class="secondary">Start Guide</button>
+                        <button id="stopBreathing" class="ghost">Stop</button>
+                    </article>
+
+                    <!-- CALM MUSIC -->
+                    <article class="card">
+                        <h3>Calm Music</h3>
+                        <p>Select a calming sound</p>
+
+                        <select id="musicType">
+                            <option value="meditation">Meditation (Soft tone)</option>
+                            <option value="rain">Rain Sound</option>
+                            <option value="ambient">Ambient Calm</option>
+                        </select>
+
+                        <button id="playTone" class="secondary">Play</button>
+                        <button id="stopTone" class="ghost">Stop</button>
+                    </article>
+
+                    <article class="card">
+                        <h3>Quick Care</h3>
+                        <ul>
+                            <li>Drink water</li>
+                            <li>Move to a well-lit place</li>
+                            <li>Do shoulder rolls 5 times</li>
+                            <li>Eat a light snack if you feel weak</li>
+                        </ul>
+                        <h4>Women Health Support</h4>
+                        <div id="calmHealthSupport">
+                            <ul>
+                                <li>Select a health issue in Mood Check-in to get AI suggestions.</li>
+                            </ul>
+                        </div>
+
+                        <p class="helper-text">
+                            These are general wellness suggestions, not medical advice.
+                        </p>
+                    </article>
+
+                </div>
+            </section>
+
+            <section id="contacts" class="page hidden">
+                <div class="topbar">
+                    <h2>Trusted Contacts</h2>
+                </div>
+
+                <div class="grid cards-2">
+                    <form id="contactForm" class="card">
+                        <h3>Add Contact</h3>
+
+                        <input id="contactName" placeholder="Name" required />
+                        <input id="contactPhone" placeholder="Phone with country code e.g. +91..." required />
+                        <input id="contactEmail" placeholder="Email optional" />
+                        <input id="relationship" placeholder="Relationship" />
+
+                        <label>
+                            <input id="isPrimary" type="checkbox" />
+                            Primary contact
+                        </label>
+
+                        <button class="primary" type="submit">Save Contact</button>
+                    </form>
+
+                    <div class="card">
+                        <h3>Saved Contacts</h3>
+                        <div id="contactsList"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="settings" class="page hidden">
+                <div class="topbar">
+                    <h2>Notification Settings</h2>
+                </div>
+
+                <form id="settingsForm" class="card settings-card">
+                    <label>
+                        <input id="smsEnabled" type="checkbox" checked />
+                        Send SMS on SOS
+                    </label>
+
+                    <label>
+                        <input id="browserEnabled" type="checkbox" checked />
+                        Browser notifications
+                    </label>
+
+                    <label>
+                        <input id="autoSafetyMode" type="checkbox" checked />
+                        Auto-enable safety mode when stress/risk is high
+                    </label>
+
+                    <label>
+                        <input id="calmModeEnabled" type="checkbox" checked />
+                        Enable Smart Calm Mode
+                    </label>
+
+                    <label>
+                        Check-in interval minutes
+                        <input id="checkinMinutes" type="number" value="10" min="1" />
+                    </label>
+
+                    <button class="primary" type="submit">Save Settings</button>
+                </form>
+            </section>
+        </main>
+    </div>
+    <div id="sosOverlay" class="sos-overlay hidden">
+        <div class="sos-box">
+            <h1>🚨 SOS ACTIVATED</h1>
+            <p>Emergency alert triggered. Sharing live location with trusted contacts.</p>
+            <button id="stopSosVisual" class="secondary">Stop Siren</button>
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
